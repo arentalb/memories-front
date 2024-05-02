@@ -1,4 +1,7 @@
 import { ChangeEvent, useRef, useState } from "react";
+import { QueryClient, useMutation } from "react-query";
+import convertToBase64 from "../../utils/convertToBase64.ts";
+import { createPost } from "../../api/postsApi.ts";
 
 export function Form() {
   const [formValue, setFormValue] = useState({
@@ -17,8 +20,51 @@ export function Form() {
     }));
   }
 
+  const queryClient = new QueryClient();
+  const { mutateAsync, isLoading, isError, error } = useMutation({
+    mutationFn: createPost,
+    onSuccess: () => {
+      queryClient.invalidateQueries("posts");
+      console.log("Post created successfully");
+      setFormValue({
+        creator: "",
+        title: "",
+        message: "",
+        tags: "",
+      });
+      setImageFile(null);
+    },
+    onError: (error) => {
+      console.error("Error creating post:", error);
+    },
+  });
+
+  //{
+  //   "title": "Example Post Title",
+  //   "message": "This is an example post message describing the content.",
+  //   "creator": "User123",
+  //   "tags": ["tag1", "tag2", "tag3"],
+  //   "selectedFile": "url_to_image_or_file"
+  // }
+  async function createPostHandler() {
+    try {
+      if (!imageFile) {
+        throw new Error("No image file provided");
+      }
+
+      const base64 = await convertToBase64(imageFile);
+      const tags = formValue.tags.split(",").map((tag) => tag.trim());
+      const newPost = { ...formValue, selectedFile: base64, tags };
+      await mutateAsync(newPost);
+    } catch (err) {
+      console.error("Failed to create post:", err);
+    }
+  }
+
   return (
     <div className={"flex flex-col gap-6 w-full"}>
+      {isLoading && <p>creating .....</p>}
+      {isError && <p>error {JSON.stringify(error)} </p>}
       <Input
         onChange={changeHandler}
         name={"creator"}
@@ -47,7 +93,7 @@ export function Form() {
       <FileInput imageFile={imageFile} setImageFile={setImageFile} />
       <div className={"grid w-full grid-cols-2 gap-3"}>
         <Button
-          onClick={() => {}}
+          onClick={createPostHandler}
           text={"Save"}
           className={"bg-blue-200 hover:bg-blue-300"}
         />
