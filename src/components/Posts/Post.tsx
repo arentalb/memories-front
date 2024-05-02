@@ -1,13 +1,18 @@
 import moment from "moment";
 import { TPost } from "../../types/TPost.ts";
+import { useFormPostMode } from "../../context/postContext.tsx";
 
 export function Post({ post }: { post: TPost }) {
   const formattedDate = moment(post.createdAt).format(
     "MMMM Do YYYY, h:mm:ss a",
   );
+  const { setSelectedId } = useFormPostMode();
 
   return (
-    <div className="shadow-lg border-b-blue-300 border-b-4 p-4 rounded-lg ">
+    <div
+      className="shadow-lg border-b-blue-300 border-b-4 p-4 rounded-lg "
+      onClick={() => setSelectedId(post._id)}
+    >
       <h2 className="text-lg font-bold text-gray-800">{post.title}</h2>
       <p className="text-gray-700">{post.message}</p>
       {post.selectedFile && (

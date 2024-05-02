@@ -1,7 +1,11 @@
-import { ChangeEvent, useRef, useState } from "react";
-import { QueryClient, useMutation } from "react-query";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { QueryClient, useQuery, useQueryClient } from "react-query";
 import convertToBase64 from "../../utils/convertToBase64.ts";
-import { createPost } from "../../api/postsApi.ts";
+import { fetchPostById } from "../../api/postsApi.ts";
+import { useFormPostMode } from "../../context/postContext.tsx";
+import useCreatePost from "./useCreatePost.ts";
+import useUpdatePost from "./useUpdatePost.ts";
+import { TPost } from "../../types/TPost.ts";
 
 export function Form() {
   const [formValue, setFormValue] = useState({
@@ -10,7 +14,10 @@ export function Form() {
     message: "",
     tags: "",
   });
+
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const { selectedId, setSelectedId } = useFormPostMode();
 
   function changeHandler(e: ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -20,24 +27,37 @@ export function Form() {
     }));
   }
 
-  const queryClient = new QueryClient();
-  const { mutateAsync, isLoading, isError, error } = useMutation({
-    mutationFn: createPost,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["posts"]);
-      console.log("Post created successfully");
-      setFormValue({
-        creator: "",
-        title: "",
-        message: "",
-        tags: "",
-      });
-      setImageFile(null);
-    },
-    onError: (error) => {
-      console.error("Error creating post:", error);
-    },
+  const {
+    data: selectedPost,
+    isLoading,
+    error,
+  } = useQuery<TPost>({
+    queryFn: () => fetchPostById(selectedId),
+    queryKey: ["singlePost", selectedId],
   });
+  useEffect(() => {
+    if (selectedPost && selectedId)
+      setFormValue({
+        creator: selectedPost.creator,
+        title: selectedPost.title,
+        message: selectedPost.message,
+        tags: selectedPost.tags.toString(),
+      });
+  }, [selectedId, selectedPost]);
+
+  const { createAsync, isCreating, isErrorCreat, errorCreat } = useCreatePost(
+    setFormValue,
+    setImageFile,
+  );
+  const { updateAsync, isUpdating, isErrorUpdate, errorUpdate } = useUpdatePost(
+    setFormValue,
+    setImageFile,
+    setSelectedId,
+  );
+
+  async function editPostHandler() {
+    await updateAsync({ selectedId, newPost: formValue });
+  }
 
   //{
   //   "title": "Example Post Title",
@@ -56,7 +76,7 @@ export function Form() {
       const tags = formValue.tags.split(",").map((tag) => tag.trim());
       const newPost = { ...formValue, selectedFile: base64, tags };
 
-      await mutateAsync(newPost);
+      await createAsync(newPost);
     } catch (err) {
       console.error("Failed to create post:", err);
     }
@@ -64,8 +84,17 @@ export function Form() {
 
   return (
     <div className={"flex flex-col gap-6 w-full"}>
-      {isLoading && <p>creating .....</p>}
-      {isError && <p>error {JSON.stringify(error)} </p>}
+      {isCreating && <p>creating .....</p>}
+      {isErrorCreat && <p>error {JSON.stringify(errorCreat)} </p>}
+      {selectedId ? (
+        <h1 className={"text-center text-4xl font-semibold"}>
+          Edit a memory 📸
+        </h1>
+      ) : (
+        <h1 className={"text-center text-4xl font-semibold"}>
+          Create a memory 📸
+        </h1>
+      )}
       <Input
         onChange={changeHandler}
         name={"creator"}
@@ -93,11 +122,19 @@ export function Form() {
       />
       <FileInput imageFile={imageFile} setImageFile={setImageFile} />
       <div className={"grid w-full grid-cols-2 gap-3"}>
-        <Button
-          onClick={createPostHandler}
-          text={"Save"}
-          className={"bg-blue-200 hover:bg-blue-300"}
-        />
+        {selectedId ? (
+          <Button
+            onClick={editPostHandler}
+            text={"Edit"}
+            className={"bg-blue-200 hover:bg-blue-300"}
+          />
+        ) : (
+          <Button
+            onClick={createPostHandler}
+            text={"Save"}
+            className={"bg-blue-200 hover:bg-blue-300"}
+          />
+        )}
         <Button
           onClick={() => {}}
           text={"Clear"}

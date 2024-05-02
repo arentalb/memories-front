@@ -13,4 +13,16 @@ async function createPost(newPost: PostBase) {
   return response.data;
 }
 
-export { fetchPosts, createPost };
+async function updatePost(obj: { selectedId: string; newPost: PostBase }) {
+  const { selectedId, newPost } = obj;
+
+  const response = await axios.patch(`${url}/${selectedId}`, newPost);
+  return response.data;
+}
+
+async function fetchPostById(id: string) {
+  const response = await axios.get(`${url}/${id}`);
+  return response.data;
+}
+
+export { fetchPosts, createPost, updatePost, fetchPostById };
