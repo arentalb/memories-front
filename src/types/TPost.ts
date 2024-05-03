@@ -1,16 +1,12 @@
-export interface PostBase {
+export interface PostCore {
   title: string;
   message: string;
   creator: string;
-  tags: string[];
-  selectedFile: string | null;
 }
 
-export interface PostUpdate {
-  title: string;
-  message: string;
-  creator: string;
-  tags: string;
+export interface PostBase extends PostCore {
+  tags: string[];
+  selectedFile: string | null;
 }
 
 export interface TPost extends PostBase {

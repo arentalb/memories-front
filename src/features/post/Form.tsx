@@ -49,7 +49,9 @@ export function Form() {
   const shouldBeDisable = isCreating || isFetchingPost || isUpdating;
 
   async function editPostHandler() {
-    await updatePost({ postId: selectedId, updatedPostData: formValue });
+    const tags = formValue.tags.split(",").map((tag) => tag.trim());
+    const updatedPost = { ...formValue, tags };
+    await updatePost({ postId: selectedId, updatedPostData: updatedPost });
   }
 
   //{
