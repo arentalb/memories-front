@@ -1,9 +1,9 @@
 import { useQuery } from "react-query";
-import { fetchPosts } from "../../api/postsApi.ts";
-import { Loader } from "../Loader.tsx";
+import { fetchPosts } from "../api/postsApi.ts";
+import { Loader } from "./common/Loader.tsx";
 import { Post } from "./Post.tsx";
-import { TPost } from "../../types/TPost.ts";
-import { Error } from "../Error.tsx";
+import { TPost } from "../types/TPost.ts";
+import { Error } from "./common/Error.tsx";
 
 export function Posts() {
   const { data, isLoading, isError } = useQuery<TPost[] | undefined>({

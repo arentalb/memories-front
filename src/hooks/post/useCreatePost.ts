@@ -1,4 +1,4 @@
-import { QueryClient, useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { createPost } from "../../api/postsApi.ts";
 
 function useCreatePost(setFormValue, setImageFile) {

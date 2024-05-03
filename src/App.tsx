@@ -1,5 +1,5 @@
-import { Posts } from "./components/Posts/Posts.tsx";
-import { Form } from "./components/Form/Form.tsx";
+import { Posts } from "./components/Posts.tsx";
+import { Form } from "./components/Form.tsx";
 
 function App() {
   return (
