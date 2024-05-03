@@ -1,7 +1,7 @@
 import axios from "axios";
 import { PostBase } from "../types/TPost.ts";
 
-const url = "http://localhost:6060/posts";
+const url = "https://memorylane.up.railway.app/posts";
 
 //https://axios-http.com/docs/res_schema
 async function fetchPosts() {
