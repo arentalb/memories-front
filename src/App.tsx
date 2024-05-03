@@ -9,7 +9,7 @@ function App() {
           "bg-blue-300  flex justify-center items-center gap-10 rounded-md m-4 p-4"
         }
       >
-        <h1 className={"text-3xl font-bold"}>Memories</h1>
+        <h1 className={"text-3xl font-bold"}>Memory Lane</h1>
         <img src={"img.png"} alt={"memories"} className={"w-20"} />
       </div>
 
