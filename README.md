@@ -43,6 +43,11 @@ The application will be available at http://localhost:3000.
 
 ## Deployment
 
-Memory Lane is deployed and can be accessed at  [Memory Lane ](https://memorylanee.netlify.app/).
+- Memory Lane is deployed and can be accessed at  [Memory Lane ](https://memorylanee.netlify.app/).
 
-Feel free to visit the site and share your own memories!
+
+- This frontend is served by the backend, which can be accessed
+  at  [Memory Lane Repo](https://github.com/arentalb/memories-back).
+
+
+- Feel free to visit the site and share your own memories!
