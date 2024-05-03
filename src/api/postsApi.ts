@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PostBase, PostUpdate } from "../types/TPost.ts";
+import { PostBase } from "../types/TPost.ts";
 
 const url = "http://localhost:6060/posts";
 
@@ -16,7 +16,7 @@ async function createPost(newPost: PostBase) {
 
 async function updatePost(obj: {
   postId: string | null;
-  updatedPostData: PostUpdate;
+  updatedPostData: PostBase;
 }) {
   const { postId, updatedPostData } = obj;
 
@@ -30,4 +30,11 @@ async function fetchPostById(id: string | null) {
   return response.data.data;
 }
 
-export { fetchPosts, createPost, updatePost, fetchPostById };
+async function deletePostById(id: string | null) {
+  if (id === null) return null;
+  const response = await axios.delete(`${url}/${id}`);
+
+  return response.data.data;
+}
+
+export { fetchPosts, createPost, updatePost, fetchPostById, deletePostById };

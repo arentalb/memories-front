@@ -6,7 +6,7 @@ export interface PostCore {
 
 export interface PostBase extends PostCore {
   tags: string[];
-  selectedFile: string | null;
+  selectedFile?: string | null;
 }
 
 export interface TPost extends PostBase {

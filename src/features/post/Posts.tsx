@@ -16,7 +16,7 @@ export function Posts() {
         {allPosts && allPosts.length > 0 ? (
           allPosts.map((post) => <Post key={post._id} post={post} />)
         ) : (
-          <p>No posts found.</p>
+          <Error message={"There where no post to show "} />
         )}
       </div>
     </div>
