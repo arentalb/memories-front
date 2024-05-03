@@ -3,15 +3,17 @@ import { fetchPosts } from "../../api/postsApi.ts";
 import { Loader } from "../Loader.tsx";
 import { Post } from "./Post.tsx";
 import { TPost } from "../../types/TPost.ts";
+import { Error } from "../Error.tsx";
 
 export function Posts() {
-  const { data, isLoading, error } = useQuery<TPost[] | undefined>({
+  const { data, isLoading, isError } = useQuery<TPost[] | undefined>({
     queryFn: fetchPosts,
     queryKey: ["posts"],
   });
 
   if (isLoading) return <Loader />;
-  if (error) return <p>Error fetching posts.</p>;
+  if (isError) return <Error message={"Could not fetch posts"} />;
+
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">

@@ -5,7 +5,7 @@ const url = "http://localhost:6060/posts";
 
 async function fetchPosts() {
   const response = await axios.get(url);
-  return response.data;
+  return response.data.data;
 }
 
 async function createPost(newPost: PostBase) {
@@ -22,7 +22,7 @@ async function updatePost(obj: { selectedId: string; newPost: PostBase }) {
 
 async function fetchPostById(id: string) {
   const response = await axios.get(`${url}/${id}`);
-  return response.data;
+  return response.data.data;
 }
 
 export { fetchPosts, createPost, updatePost, fetchPostById };
