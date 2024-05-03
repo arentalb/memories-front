@@ -109,7 +109,12 @@ export function Form() {
       }
       const base64 = await convertToBase64(imageFile);
       const tags = formValue.tags.split(",").map((tag) => tag.trim());
-      const newPost = { ...formValue, selectedFile: base64, tags };
+      const newPost = {
+        ...formValue,
+        selectedFile: base64,
+        tags,
+        createdAt: new Date(),
+      };
       const newErrors = validate(formValue);
 
       if (Object.keys(newErrors).length === 0 && !fileError) {
