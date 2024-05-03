@@ -1,14 +1,14 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { useQuery } from "react-query";
-import convertToBase64 from "../utils/convertToBase64.ts";
-import { fetchPostById } from "../api/postsApi.ts";
-import { useFormPostMode } from "../context/postContext.tsx";
-import useCreatePost from "../hooks/post/useCreatePost.ts";
-import useUpdatePost from "../hooks/post/useUpdatePost.ts";
-import { TPost } from "../types/TPost.ts";
-import { FileInput } from "./common/FileInput.tsx";
-import { Button } from "./common/Button.tsx";
-import { Input } from "./common/Input.tsx";
+import convertToBase64 from "../../utils/convertToBase64.ts";
+import { fetchPostById } from "../../api/postsApi.ts";
+import { useFormPostMode } from "../../context/postContext.tsx";
+import useCreatePost from "./hooks/useCreatePost.ts";
+import useUpdatePost from "./hooks/useUpdatePost.ts";
+import { TPost } from "../../types/TPost.ts";
+import { FileInput } from "../../ui/common/FileInput.tsx";
+import { Button } from "../../ui/common/Button.tsx";
+import { Input } from "../../ui/common/Input.tsx";
 
 export function Form() {
   const [formValue, setFormValue] = useState({
@@ -64,7 +64,7 @@ export function Form() {
 
   //{
   //   "title": "Example Post Title",
-  //   "message": "This is an example post message describing the content.",
+  //   "message": "This is an example hooks message describing the content.",
   //   "creator": "User123",
   //   "tags": ["tag1", "tag2", "tag3"],
   //   "selectedFile": "url_to_image_or_file"
@@ -81,7 +81,7 @@ export function Form() {
 
       await createAsync(newPost);
     } catch (err) {
-      console.error("Failed to create post:", err);
+      console.error("Failed to create hooks:", err);
     }
   }
 

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "react-query";
-import { createPost } from "../../api/postsApi.ts";
+import { createPost } from "../../../api/postsApi.ts";
 
 function useCreatePost(setFormValue, setImageFile) {
   const queryClient = useQueryClient();
@@ -21,7 +21,7 @@ function useCreatePost(setFormValue, setImageFile) {
       setImageFile(null);
     },
     onError: (error) => {
-      console.error("Error creating post:", error);
+      console.error("Error creating hooks:", error);
     },
   });
 

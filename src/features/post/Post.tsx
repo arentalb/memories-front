@@ -1,6 +1,6 @@
 import moment from "moment";
-import { TPost } from "../types/TPost.ts";
-import { useFormPostMode } from "../context/postContext.tsx";
+import { TPost } from "../../types/TPost.ts";
+import { useFormPostMode } from "../../context/postContext.tsx";
 
 export function Post({ post }: { post: TPost }) {
   const formattedDate = moment(post.createdAt).format(

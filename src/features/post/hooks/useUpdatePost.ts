@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "react-query";
-import { updatePost } from "../../api/postsApi.ts";
+import { updatePost } from "../../../api/postsApi.ts";
 
 function useUpdatePost(setFormValue, setImageFile, setSelectedId) {
   const queryClient = useQueryClient();
@@ -23,7 +23,7 @@ function useUpdatePost(setFormValue, setImageFile, setSelectedId) {
       setSelectedId(null);
     },
     onError: (error) => {
-      console.error("Error creating post:", error);
+      console.error("Error creating hooks:", error);
     },
   });
 
