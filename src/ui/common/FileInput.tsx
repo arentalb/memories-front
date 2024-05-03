@@ -4,12 +4,14 @@ interface FileInputProps {
   accept?: string;
   imageFile: File | null;
   setImageFile: (file: File | null) => void;
+  setFileError: (text: string) => void;
 }
 
 export function FileInput({
   accept = "image/*",
   imageFile,
   setImageFile,
+  setFileError,
 }: FileInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -22,6 +24,7 @@ export function FileInput({
       const file = event.target.files[0];
       setImageFile(file);
     }
+    setFileError("");
   };
 
   return (
@@ -37,7 +40,7 @@ export function FileInput({
             className="  rounded-md object-cover self-start"
           />
         ) : (
-          <span>Choose file or drag it here</span>
+          <span>Choose file </span>
         )}
         <input
           ref={fileInputRef}

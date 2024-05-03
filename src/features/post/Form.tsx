@@ -9,14 +9,47 @@ import { Button } from "../../ui/common/Button.tsx";
 import { Input } from "../../ui/common/Input.tsx";
 import useFetchPostById from "./hooks/useFetchPostById.ts";
 
+interface FormValues {
+  creator: string;
+  title: string;
+  message: string;
+  tags: string;
+  imageFile?: File;
+}
+
+interface FormErrors {
+  creator?: string;
+  title?: string;
+  message?: string;
+  tags?: string;
+}
+
 export function Form() {
-  const [formValue, setFormValue] = useState({
+  const [formValue, setFormValue] = useState<FormValues>({
     creator: "",
     title: "",
     message: "",
     tags: "",
   });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [fileError, setFileError] = useState<string>("");
 
+  const validate = (values: FormValues) => {
+    const errors: FormErrors = {};
+    if (!values.creator) {
+      errors.creator = "Creator name is required";
+    }
+    if (!values.title) {
+      errors.title = "Title is required";
+    }
+    if (!values.message) {
+      errors.message = "Message is required";
+    }
+    if (!values.tags) {
+      errors.tags = "At least one tag is required";
+    }
+    return errors;
+  };
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   function changeHandler(e: ChangeEvent<HTMLInputElement>) {
@@ -25,6 +58,8 @@ export function Form() {
       ...prevState,
       [name]: value,
     }));
+    // const newErrors = validate({ ...formValue, [name]: value });
+    // setErrors(newErrors);
   }
 
   const { selectedId, setSelectedId } = useFormPostMode();
@@ -51,7 +86,13 @@ export function Form() {
   async function editPostHandler() {
     const tags = formValue.tags.split(",").map((tag) => tag.trim());
     const updatedPost = { ...formValue, tags };
-    await updatePost({ postId: selectedId, updatedPostData: updatedPost });
+
+    const newErrors = validate(formValue);
+    if (Object.keys(newErrors).length === 0) {
+      await updatePost({ postId: selectedId, updatedPostData: updatedPost });
+    } else {
+      setErrors(newErrors);
+    }
   }
 
   //{
@@ -63,15 +104,19 @@ export function Form() {
   // }
   async function createPostHandler() {
     try {
-      if (!imageFile) {
-        throw new Error("No image file provided");
+      if (!selectedId && !imageFile) {
+        setFileError("please add an image ");
       }
-
       const base64 = await convertToBase64(imageFile);
       const tags = formValue.tags.split(",").map((tag) => tag.trim());
       const newPost = { ...formValue, selectedFile: base64, tags };
+      const newErrors = validate(formValue);
 
-      await createPost(newPost);
+      if (Object.keys(newErrors).length === 0 && !fileError) {
+        await createPost(newPost);
+      } else {
+        setErrors(newErrors);
+      }
     } catch (err) {
       console.error("Failed to create hooks:", err);
     }
@@ -102,34 +147,63 @@ export function Form() {
           Create a memory 📸
         </h1>
       )}
-      <Input
-        onChange={changeHandler}
-        name={"creator"}
-        placeholder={"Creator"}
-        value={formValue.creator}
-      />
-      <Input
-        onChange={changeHandler}
-        name={"title"}
-        placeholder={"Title"}
-        value={formValue.title}
-      />
-      <Input
-        onChange={changeHandler}
-        name={"message"}
-        placeholder={"Message"}
-        value={formValue.message}
-      />
+      <div>
+        <Input
+          onChange={changeHandler}
+          name={"creator"}
+          placeholder={"Creator"}
+          value={formValue.creator}
+        />
+        {errors.creator && (
+          <p className={"mt-1 text-sm text-red-600"}>{errors.creator}</p>
+        )}
+      </div>
+      <div>
+        <Input
+          onChange={changeHandler}
+          name={"title"}
+          placeholder={"Title"}
+          value={formValue.title}
+        />
+        {errors.title && (
+          <p className={"mt-1 text-sm text-red-600"}>{errors.title}</p>
+        )}
+      </div>
+      <div>
+        <Input
+          onChange={changeHandler}
+          name={"message"}
+          placeholder={"Message"}
+          value={formValue.message}
+        />
+        {errors.message && (
+          <p className={"mt-1 text-sm text-red-600"}>{errors.message}</p>
+        )}
+      </div>
+      <div>
+        <Input
+          onChange={changeHandler}
+          name={"tags"}
+          placeholder={"Tags"}
+          value={formValue.tags}
+        />
+        {errors.tags && (
+          <p className={"mt-1 text-sm text-red-600"}>{errors.tags}</p>
+        )}
+      </div>
+      <div>
+        {!selectedId && !selectedPost && (
+          <FileInput
+            imageFile={imageFile}
+            setImageFile={setImageFile}
+            setFileError={setFileError}
+          />
+        )}
+        {fileError && (
+          <p className={"mt-1 text-sm text-red-600"}>{fileError}</p>
+        )}
+      </div>
 
-      <Input
-        onChange={changeHandler}
-        name={"tags"}
-        placeholder={"Tags"}
-        value={formValue.tags}
-      />
-      {!selectedId && !selectedPost && (
-        <FileInput imageFile={imageFile} setImageFile={setImageFile} />
-      )}
       <div className={"grid w-full grid-cols-2 gap-3"}>
         {selectedId ? (
           <Button
