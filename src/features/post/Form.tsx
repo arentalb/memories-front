@@ -49,7 +49,7 @@ export function Form() {
   const shouldBeDisable = isCreating || isFetchingPost || isUpdating;
 
   async function editPostHandler() {
-    await updatePost({ selectedId, newPost: formValue });
+    await updatePost({ postId: selectedId, updatedPostData: formValue });
   }
 
   //{

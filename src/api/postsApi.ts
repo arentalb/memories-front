@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PostBase } from "../types/TPost.ts";
+import { PostBase, PostUpdate } from "../types/TPost.ts";
 
 const url = "http://localhost:6060/posts";
 
@@ -14,10 +14,13 @@ async function createPost(newPost: PostBase) {
   return response.data.data;
 }
 
-async function updatePost(obj: { selectedId: string; newPost: PostBase }) {
-  const { selectedId, newPost } = obj;
+async function updatePost(obj: {
+  postId: string | null;
+  updatedPostData: PostUpdate;
+}) {
+  const { postId, updatedPostData } = obj;
 
-  const response = await axios.patch(`${url}/${selectedId}`, newPost);
+  const response = await axios.patch(`${url}/${postId}`, updatedPostData);
   return response.data.data;
 }
 
