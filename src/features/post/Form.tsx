@@ -1,14 +1,13 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "react-query";
+import { useQueryClient } from "react-query";
 import convertToBase64 from "../../utils/convertToBase64.ts";
-import { fetchPostById } from "../../api/postsApi.ts";
 import { useFormPostMode } from "../../context/postContext.tsx";
 import useCreatePost from "./hooks/useCreatePost.ts";
 import useUpdatePost from "./hooks/useUpdatePost.ts";
-import { TPost } from "../../types/TPost.ts";
 import { FileInput } from "../../ui/common/FileInput.tsx";
 import { Button } from "../../ui/common/Button.tsx";
 import { Input } from "../../ui/common/Input.tsx";
+import useFetchPostById from "./hooks/useFetchPostById.ts";
 
 export function Form() {
   const [formValue, setFormValue] = useState({
@@ -20,8 +19,6 @@ export function Form() {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const { selectedId, setSelectedId } = useFormPostMode();
-
   function changeHandler(e: ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setFormValue((prevState) => ({
@@ -30,14 +27,17 @@ export function Form() {
     }));
   }
 
-  const {
-    data: selectedPost,
-    isLoading,
-    error,
-  } = useQuery<TPost>({
-    queryFn: () => fetchPostById(selectedId),
-    queryKey: ["singlePost", selectedId],
-  });
+  const { selectedId, setSelectedId } = useFormPostMode();
+
+  const { selectedPost, isFetchingPost, isErrorPost, errorPost } =
+    useFetchPostById(selectedId);
+
+  const { createPost, isCreating, isErrorCreat, errorCreat } =
+    useCreatePost(reset);
+
+  const { updatePost, isUpdating, isErrorUpdate, errorUpdate } =
+    useUpdatePost(reset);
+
   useEffect(() => {
     if (selectedPost && selectedId)
       setFormValue({
@@ -47,11 +47,6 @@ export function Form() {
         tags: selectedPost.tags.toString(),
       });
   }, [selectedId, selectedPost]);
-
-  const { createPost, isCreating, isErrorCreat, errorCreat } =
-    useCreatePost(reset);
-  const { updatePost, isUpdating, isErrorUpdate, errorUpdate } =
-    useUpdatePost(reset);
 
   async function editPostHandler() {
     await updatePost({ selectedId, newPost: formValue });
