@@ -1,33 +1,23 @@
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation } from "react-query";
 import { updatePost } from "../../../api/postsApi.ts";
 
-function useUpdatePost(setFormValue, setImageFile, setSelectedId) {
-  const queryClient = useQueryClient();
-
-  const {
-    mutateAsync: updateAsync,
-    isLoading: isUpdating,
-    isError: isErrorUpdate,
-    error: errorUpdate,
-  } = useMutation({
+function useUpdatePost(reset: () => void) {
+  const { mutateAsync, isLoading, isError, error } = useMutation({
     mutationFn: updatePost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      setFormValue({
-        creator: "",
-        title: "",
-        message: "",
-        tags: "",
-      });
-      setImageFile(null);
-      setSelectedId(null);
+      reset();
     },
     onError: (error) => {
       console.error("Error creating hooks:", error);
     },
   });
 
-  return { updateAsync, isUpdating, isErrorUpdate, errorUpdate };
+  return {
+    updatePost: mutateAsync,
+    isUpdating: isLoading,
+    isErrorUpdate: isError,
+    errorUpdate: error,
+  };
 }
 
 export default useUpdatePost;

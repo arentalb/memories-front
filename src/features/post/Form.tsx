@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import convertToBase64 from "../../utils/convertToBase64.ts";
 import { fetchPostById } from "../../api/postsApi.ts";
 import { useFormPostMode } from "../../context/postContext.tsx";
@@ -48,18 +48,13 @@ export function Form() {
       });
   }, [selectedId, selectedPost]);
 
-  const { createAsync, isCreating, isErrorCreat, errorCreat } = useCreatePost(
-    setFormValue,
-    setImageFile,
-  );
-  const { updateAsync, isUpdating, isErrorUpdate, errorUpdate } = useUpdatePost(
-    setFormValue,
-    setImageFile,
-    setSelectedId,
-  );
+  const { createPost, isCreating, isErrorCreat, errorCreat } =
+    useCreatePost(reset);
+  const { updatePost, isUpdating, isErrorUpdate, errorUpdate } =
+    useUpdatePost(reset);
 
   async function editPostHandler() {
-    await updateAsync({ selectedId, newPost: formValue });
+    await updatePost({ selectedId, newPost: formValue });
   }
 
   //{
@@ -79,10 +74,24 @@ export function Form() {
       const tags = formValue.tags.split(",").map((tag) => tag.trim());
       const newPost = { ...formValue, selectedFile: base64, tags };
 
-      await createAsync(newPost);
+      await createPost(newPost);
     } catch (err) {
       console.error("Failed to create hooks:", err);
     }
+  }
+
+  const queryClient = useQueryClient();
+
+  function reset() {
+    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    setFormValue({
+      creator: "",
+      title: "",
+      message: "",
+      tags: "",
+    });
+    setImageFile(null);
+    setSelectedId(null);
   }
 
   return (
