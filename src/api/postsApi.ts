@@ -21,7 +21,8 @@ async function updatePost(obj: { selectedId: string; newPost: PostBase }) {
   return response.data.data;
 }
 
-async function fetchPostById(id: string) {
+async function fetchPostById(id: string | null) {
+  if (id === null) return null;
   const response = await axios.get(`${url}/${id}`);
   return response.data.data;
 }

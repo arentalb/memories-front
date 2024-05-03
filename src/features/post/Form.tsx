@@ -29,14 +29,12 @@ export function Form() {
 
   const { selectedId, setSelectedId } = useFormPostMode();
 
-  const { selectedPost, isFetchingPost, isErrorPost, errorPost } =
+  const { selectedPost, isFetchingPost, isErrorPost } =
     useFetchPostById(selectedId);
 
-  const { createPost, isCreating, isErrorCreat, errorCreat } =
-    useCreatePost(reset);
+  const { createPost, isCreating, isErrorCreat } = useCreatePost(reset);
 
-  const { updatePost, isUpdating, isErrorUpdate, errorUpdate } =
-    useUpdatePost(reset);
+  const { updatePost, isUpdating, isErrorUpdate } = useUpdatePost(reset);
 
   useEffect(() => {
     if (selectedPost && selectedId)
@@ -47,6 +45,8 @@ export function Form() {
         tags: selectedPost.tags.toString(),
       });
   }, [selectedId, selectedPost]);
+
+  const shouldBeDisable = isCreating || isFetchingPost || isUpdating;
 
   async function editPostHandler() {
     await updatePost({ selectedId, newPost: formValue });
@@ -91,8 +91,6 @@ export function Form() {
 
   return (
     <div className={"flex flex-col gap-6 w-full"}>
-      {isCreating && <p>creating .....</p>}
-      {isErrorCreat && <p>error {JSON.stringify(errorCreat)} </p>}
       {selectedId ? (
         <h1 className={"text-center text-4xl font-semibold"}>
           Edit a memory 📸
@@ -127,27 +125,43 @@ export function Form() {
         placeholder={"Tags"}
         value={formValue.tags}
       />
-      <FileInput imageFile={imageFile} setImageFile={setImageFile} />
+      {!selectedId && !selectedPost && (
+        <FileInput imageFile={imageFile} setImageFile={setImageFile} />
+      )}
       <div className={"grid w-full grid-cols-2 gap-3"}>
         {selectedId ? (
           <Button
             onClick={editPostHandler}
             text={"Edit"}
             className={"bg-blue-200 hover:bg-blue-300"}
+            disabled={shouldBeDisable}
           />
         ) : (
           <Button
             onClick={createPostHandler}
             text={"Save"}
             className={"bg-blue-200 hover:bg-blue-300"}
+            disabled={shouldBeDisable}
           />
         )}
         <Button
-          onClick={() => {}}
+          onClick={reset}
           text={"Clear"}
           className={"bg-red-200 hover:bg-red-300"}
+          disabled={shouldBeDisable}
         />
       </div>
+
+      <p className={"text-center"}>
+        {isFetchingPost && "Fetching ....."}
+        {isCreating && "Creating ....."}
+        {isUpdating && "Updating ....."}
+      </p>
+      <p className={"text-center"}>
+        {isErrorPost && "Could not fetch product"}
+        {isErrorCreat && "Could not create product"}
+        {isErrorUpdate && "Could not update product"}
+      </p>
     </div>
   );
 }
