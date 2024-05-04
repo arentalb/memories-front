@@ -1,6 +1,5 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "react-query";
-import convertToBase64 from "../../utils/convertToBase64.ts";
 import { useFormPostMode } from "../../context/postContext.tsx";
 import useCreatePost from "./hooks/useCreatePost.ts";
 import useUpdatePost from "./hooks/useUpdatePost.ts";
@@ -8,59 +7,27 @@ import { FileInput } from "../../ui/common/FileInput.tsx";
 import { Button } from "../../ui/common/Button.tsx";
 import { Input } from "../../ui/common/Input.tsx";
 import useFetchPostById from "./hooks/useFetchPostById.ts";
+import { useForm } from "react-hook-form";
+import convertToBase64 from "../../utils/convertToBase64.ts";
 
-interface FormValues {
+export type Inputs = {
   creator: string;
-  title: string;
-  message: string;
   tags: string;
-  imageFile?: File;
-}
-
-interface FormErrors {
-  creator?: string;
-  title?: string;
-  message?: string;
-  tags?: string;
-}
+  message: string;
+  title: string;
+  image: File | null;
+};
 
 export function Form() {
-  const [formValue, setFormValue] = useState<FormValues>({
-    creator: "",
-    title: "",
-    message: "",
-    tags: "",
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [fileError, setFileError] = useState<string>("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    reset: resetForm,
+  } = useForm<Inputs>();
 
-  const validate = (values: FormValues) => {
-    const errors: FormErrors = {};
-    if (!values.creator) {
-      errors.creator = "Creator name is required";
-    }
-    if (!values.title) {
-      errors.title = "Title is required";
-    }
-    if (!values.message) {
-      errors.message = "Message is required";
-    }
-    if (!values.tags) {
-      errors.tags = "At least one tag is required";
-    }
-    return errors;
-  };
   const [imageFile, setImageFile] = useState<File | null>(null);
-
-  function changeHandler(e: ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target;
-    setFormValue((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-    // const newErrors = validate({ ...formValue, [name]: value });
-    // setErrors(newErrors);
-  }
 
   const { selectedId, setSelectedId } = useFormPostMode();
 
@@ -72,58 +39,41 @@ export function Form() {
   const { updatePost, isUpdating, isErrorUpdate } = useUpdatePost(reset);
 
   useEffect(() => {
-    if (selectedPost && selectedId)
-      setFormValue({
-        creator: selectedPost.creator,
-        title: selectedPost.title,
-        message: selectedPost.message,
-        tags: selectedPost.tags.toString(),
-      });
-  }, [selectedId, selectedPost]);
+    if (selectedPost && selectedId) {
+      setValue("creator", selectedPost.creator);
+      setValue("title", selectedPost.title);
+      setValue("message", selectedPost.message);
+      setValue("tags", selectedPost.tags.toString());
+    }
+  }, [selectedId, selectedPost, setValue]);
 
   const shouldBeDisable = isCreating || isFetchingPost || isUpdating;
 
-  async function editPostHandler() {
-    const tags = formValue.tags.split(",").map((tag) => tag.trim());
-    const updatedPost = { ...formValue, tags };
-
-    const newErrors = validate(formValue);
-    if (Object.keys(newErrors).length === 0) {
+  async function editPostHandler(inputData: Inputs) {
+    console.log("editPostHandler");
+    console.log(inputData);
+    if (selectedId && selectedPost) {
+      const tags = inputData.tags.split(",").map((tag) => tag.trim());
+      const updatedPost = { ...inputData, tags };
       await updatePost({ postId: selectedId, updatedPostData: updatedPost });
-    } else {
-      setErrors(newErrors);
     }
   }
 
-  //{
-  //   "title": "Example Post Title",
-  //   "message": "This is an example hooks message describing the content.",
-  //   "creator": "User123",
-  //   "tags": ["tag1", "tag2", "tag3"],
-  //   "selectedFile": "url_to_image_or_file"
-  // }
-  async function createPostHandler() {
-    try {
-      if (!selectedId && !imageFile) {
-        setFileError("please add an image ");
-      }
-      const base64 = await convertToBase64(imageFile);
-      const tags = formValue.tags.split(",").map((tag) => tag.trim());
-      const newPost = {
-        ...formValue,
-        selectedFile: base64,
-        tags,
-        createdAt: new Date(),
-      };
-      const newErrors = validate(formValue);
-
-      if (Object.keys(newErrors).length === 0 && !fileError) {
+  async function createPostHandler(inputData: Inputs) {
+    if (!selectedId && !selectedPost) {
+      try {
+        const base64 = await convertToBase64(imageFile);
+        const tags = inputData.tags.split(",").map((tag) => tag.trim());
+        const newPost = {
+          ...inputData,
+          selectedFile: base64,
+          tags,
+          createdAt: new Date(),
+        };
         await createPost(newPost);
-      } else {
-        setErrors(newErrors);
+      } catch (err) {
+        console.error("Failed to create hooks:", err);
       }
-    } catch (err) {
-      console.error("Failed to create hooks:", err);
     }
   }
 
@@ -131,18 +81,14 @@ export function Form() {
 
   function reset() {
     queryClient.invalidateQueries({ queryKey: ["posts"] });
-    setFormValue({
-      creator: "",
-      title: "",
-      message: "",
-      tags: "",
-    });
+
+    resetForm();
     setImageFile(null);
     setSelectedId(null);
   }
 
   return (
-    <div className={"flex flex-col gap-6 w-full"}>
+    <form className={"flex flex-col gap-6 w-full"}>
       {selectedId ? (
         <h1 className={"text-center text-4xl font-semibold"}>
           Edit a memory 📸
@@ -152,74 +98,73 @@ export function Form() {
           Create a memory 📸
         </h1>
       )}
-      <div>
-        <Input
-          onChange={changeHandler}
-          name={"creator"}
-          placeholder={"Creator"}
-          value={formValue.creator}
-        />
-        {errors.creator && (
-          <p className={"mt-1 text-sm text-red-600"}>{errors.creator}</p>
-        )}
-      </div>
-      <div>
-        <Input
-          onChange={changeHandler}
-          name={"title"}
-          placeholder={"Title"}
-          value={formValue.title}
-        />
-        {errors.title && (
-          <p className={"mt-1 text-sm text-red-600"}>{errors.title}</p>
-        )}
-      </div>
-      <div>
-        <Input
-          onChange={changeHandler}
-          name={"message"}
-          placeholder={"Message"}
-          value={formValue.message}
-        />
-        {errors.message && (
-          <p className={"mt-1 text-sm text-red-600"}>{errors.message}</p>
-        )}
-      </div>
-      <div>
-        <Input
-          onChange={changeHandler}
-          name={"tags"}
-          placeholder={"Tags"}
-          value={formValue.tags}
-        />
-        {errors.tags && (
-          <p className={"mt-1 text-sm text-red-600"}>{errors.tags}</p>
-        )}
-      </div>
+      <Input
+        type="text"
+        name="creator"
+        placeholder={"Creator"}
+        errors={errors}
+        register={register}
+        validationSchema={{
+          required: "Please provide a creator name",
+        }}
+        required
+      />
+
+      <Input
+        type="text"
+        name="title"
+        placeholder={"Title"}
+        errors={errors}
+        register={register}
+        validationSchema={{
+          required: "Please provide a title",
+        }}
+        required
+      />
+
+      <Input
+        type="text"
+        name="message"
+        placeholder={"Message"}
+        errors={errors}
+        register={register}
+        validationSchema={{
+          required: "Please provide a message",
+        }}
+        required
+      />
+      <Input
+        type="text"
+        name="tags"
+        placeholder={"Tags"}
+        errors={errors}
+        register={register}
+        validationSchema={{
+          required: "Please provide tags",
+        }}
+        required
+      />
+
       <div>
         {!selectedId && !selectedPost && (
-          <FileInput
-            imageFile={imageFile}
-            setImageFile={setImageFile}
-            setFileError={setFileError}
-          />
+          <FileInput imageFile={imageFile} setImageFile={setImageFile} />
         )}
-        {fileError && (
-          <p className={"mt-1 text-sm text-red-600"}>{fileError}</p>
+        {errors.image && (
+          <p className={"mt-1 text-sm text-red-600"}>please select an image</p>
         )}
       </div>
 
       <div className={"grid w-full grid-cols-2 gap-3"}>
         {selectedId ? (
           <Button
-            onClick={editPostHandler}
+            onClick={handleSubmit(editPostHandler)}
             text={"Edit"}
             className={"bg-blue-200 hover:bg-blue-300"}
             disabled={shouldBeDisable}
           />
         ) : (
           <Button
-            onClick={createPostHandler}
+            onClick={handleSubmit(createPostHandler)}
             text={"Save"}
             className={"bg-blue-200 hover:bg-blue-300"}
             disabled={shouldBeDisable}
@@ -230,6 +175,7 @@ export function Form() {
           text={"Clear"}
           className={"bg-red-200 hover:bg-red-300"}
           disabled={shouldBeDisable}
+          type="button"
         />
       </div>
 
@@ -243,6 +189,6 @@ export function Form() {
         {isErrorCreat && "Could not create product"}
         {isErrorUpdate && "Could not update product"}
       </p>
-    </div>
+    </form>
   );
 }
