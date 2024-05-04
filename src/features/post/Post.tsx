@@ -39,16 +39,16 @@ export function Post({ post }: { post: TPost }) {
 
   return (
     <div
-      className="shadow-lg border-b-blue-300 border-b-4 p-4 rounded-lg "
+      className="shadow-lg border-b-blue-300 border-b-4 p-4 rounded-lg  flex flex-col"
       onClick={() => setSelectedId(post._id)}
     >
       <h2 className="text-lg font-bold text-gray-800">{post.title}</h2>
-      <p className="text-gray-700">{post.message}</p>
+      <p className="text-gray-700 mb-6">{post.message}</p>
       {post.selectedFile && (
         <img
           src={post.selectedFile}
           alt="Post"
-          className="mt-2 rounded max-w-full h-auto"
+          className="rounded w-full h-auto mt-auto transform transition duration-300 ease-in-out hover:scale-105"
         />
       )}
 
@@ -68,7 +68,7 @@ export function Post({ post }: { post: TPost }) {
           </span>
         ))}
       </div>
-      <div className={"flex justify-between items-center"}>
+      <div className={"flex justify-between items-center "}>
         <div className="text-gray-800 mt-2">
           <span>👍 {post.likeCount}</span>
         </div>
