@@ -9,6 +9,7 @@ import { Input } from "../../ui/common/Input.tsx";
 import useFetchPostById from "./hooks/useFetchPostById.ts";
 import { useForm } from "react-hook-form";
 import convertToBase64 from "../../utils/convertToBase64.ts";
+import { TPost } from "../../types/TPost.ts";
 
 export type Inputs = {
   creator: string;
@@ -50,11 +51,17 @@ export function Form() {
   const shouldBeDisable = isCreating || isFetchingPost || isUpdating;
 
   async function editPostHandler(inputData: Inputs) {
-    console.log("editPostHandler");
-    console.log(inputData);
     if (selectedId && selectedPost) {
       const tags = inputData.tags.split(",").map((tag) => tag.trim());
       const updatedPost = { ...inputData, tags };
+
+      queryClient.setQueryData(["posts"], (oldPosts: TPost[] | undefined) => {
+        if (!oldPosts) return [];
+        return oldPosts.map((p) =>
+          p._id === selectedId ? { ...p, ...updatedPost } : p,
+        );
+      });
+
       await updatePost({ postId: selectedId, updatedPostData: updatedPost });
     }
   }

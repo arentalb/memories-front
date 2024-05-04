@@ -12,14 +12,27 @@ export function Post({ post }: { post: TPost }) {
 
   const queryClient = useQueryClient();
 
-  const { deletePost, isDeleting, isErrorDelete } =
-    useDeletePostById(invalidateCache);
+  const { deletePost, isErrorDelete } = useDeletePostById(invalidateCache);
 
   function invalidateCache() {
     queryClient.invalidateQueries(["posts"]);
   }
 
   async function deleteHandling() {
+    queryClient.setQueryData(["posts"], (oldPosts: TPost[] | undefined) => {
+      if (!oldPosts) return [];
+      return oldPosts.filter((p) => p._id !== post._id);
+    });
+
+    try {
+      await deletePost(post._id);
+      setSelectedId(null);
+    } catch (error) {
+      queryClient.setQueryData(["posts"], (oldPosts: TPost[] | undefined) => {
+        if (!oldPosts) return [post];
+        return [...oldPosts, post];
+      });
+    }
     await deletePost(post._id);
     setSelectedId(null);
   }
@@ -64,7 +77,8 @@ export function Post({ post }: { post: TPost }) {
             onClick={deleteHandling}
             className={"cursor-pointer hover:text-red-600 text-xl  "}
           >
-            {isDeleting ? <span className={"text-sm"}>Deleting </span> : "🗑️"}
+            {/*{isDeleting ? <span className={"text-sm"}>Deleting </span> : "🗑️"}*/}
+            <span>🗑️ </span>
             {isErrorDelete && "Error deleting this post "}
           </button>
         </div>
